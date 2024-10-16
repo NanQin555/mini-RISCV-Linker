@@ -1,10 +1,12 @@
-#include "file.hpp"
+#include "InputFile.hpp"
 using namespace std;
 
 int main(int argc, char* argv[]) {
     if(argc<2) {
-        assert(0&&"error");
+        assert(0&&"params number error");
     }    
-    File file(argv[1]);
+    InputFile file(argv[1]);
+
     return 0;
 }
+  

@@ -1,18 +1,21 @@
-
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <cstring>
 #include <cassert>
 using namespace std;
 class File {
-private:
+public:
     string name;
     string contents;
     ifstream file;
-public:
+
     File(string name);
     void openFile();
     bool isELFfile();
+    void readFile();
     void closeFile();
 };
+
