@@ -41,7 +41,7 @@ vector<uint8_t> InputFile::GetBytesFromIdx(int idx) {
 }
 
 Shdr* InputFile::FindSection(uint32_t type) {
-    for(int i=0; i<ElfSections.size(); i++) {
+    for(size_t i=0; i<ElfSections.size(); i++) {
         Shdr* s = &ElfSections[i];
         if(s->Type == type)
             return s;
