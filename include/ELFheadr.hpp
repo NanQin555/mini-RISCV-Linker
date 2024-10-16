@@ -1,8 +1,9 @@
 #pragma once
 #include <cstdint>
+#include <vector>
 using namespace std;
 // ELF header
-typedef struct ELFheader {
+typedef struct Ehdr {
     uint8_t Ident[16];
     uint16_t Type;
     uint16_t Machine;
@@ -17,10 +18,10 @@ typedef struct ELFheader {
     uint16_t ShEntSize;
     uint16_t ShNum;
     uint16_t ShStrndx;
-} ELFheader;
+} Ehdr;
 
 // Section header
-typedef struct SECheader {
+typedef struct Shdr {
     uint32_t Name;
     uint32_t Type;
     uint64_t Flags;
@@ -31,11 +32,20 @@ typedef struct SECheader {
     uint32_t Info;
     uint64_t AddrAlign;
     uint64_t EntSize;
-} SECheader;
+} Shdr;
 
+typedef struct Sym {
+    uint32_t Name;
+    uint8_t Info;
+    uint8_t Other;
+    uint16_t Shndx;
+    uint64_t Val;
+    uint64_t Size;
+} Sym;
 
-const int ELFheaderSize = sizeof(ELFheader);
-const int SECheaderSize = sizeof(SECheader);
+const int EhdrSize = sizeof(Ehdr);
+const int ShdrSize = sizeof(Shdr);
+const int SymSize = sizeof(Sym);
 
 template <typename T>
 T inline swapBytes(T value) {
@@ -58,8 +68,8 @@ T inline swapBytes(T value) {
 
 
 
-inline ELFheader cpyELFheader(const string& data) {
-    ELFheader header;
+inline Ehdr cpyEhdr(const vector<uint8_t>& data) {
+    Ehdr header;
     memcpy(header.Ident, data.data(), 16);
     memcpy(&header.Type, data.data() + 16, sizeof(uint16_t));
     memcpy(&header.Machine, data.data() + 18, sizeof(uint16_t));
@@ -91,9 +101,8 @@ inline ELFheader cpyELFheader(const string& data) {
     // header.ShNum = swapBytes(header.ShNum);
     // header.ShStrndx = swapBytes(header.ShStrndx);
 }
-
-inline SECheader cpySECheader(const string& data) {
-    SECheader header;
+inline Shdr cpyShdr(const vector<uint8_t>& data) {
+    Shdr header;
     memcpy(&header.Name, data.data(), sizeof(uint32_t));
     memcpy(&header.Type, data.data() + 4, sizeof(uint32_t));
     memcpy(&header.Flags, data.data() + 8, sizeof(uint64_t));
@@ -116,15 +125,37 @@ inline SECheader cpySECheader(const string& data) {
     // header.AddrAlign = swapBytes(header.AddrAlign);
     // header.EntSize = swapBytes(header.EntSize);
 }
-
+inline Sym cpySym(const vector<uint8_t>& data) {
+    Sym sym;
+    memcpy(&sym.Name, data.data(), sizeof(uint32_t));
+    memcpy(&sym.Info, data.data() + 4, sizeof(uint8_t));
+    memcpy(&sym.Other, data.data() + 5, sizeof(uint8_t));
+    memcpy(&sym.Shndx, data.data() + 6, sizeof(uint16_t));
+    memcpy(&sym.Val, data.data() + 8, sizeof(uint64_t));
+    memcpy(&sym.Size, data.data() + 16, sizeof(uint64_t));
+    return sym;
+}
 template <typename T>
-inline T ReadHeader(const string& data);
-
+inline T ReadHeader(const vector<uint8_t>& data);
 template <>
-inline ELFheader ReadHeader<ELFheader>(const string& data) {
-    return cpyELFheader(data);
+inline Ehdr ReadHeader<Ehdr>(const vector<uint8_t>& data) {
+    return cpyEhdr(data);
 }
 template <>
-inline SECheader ReadHeader<SECheader>(const string& data) {
-    return cpySECheader(data);
+inline Shdr ReadHeader<Shdr>(const vector<uint8_t>& data) {
+    return cpyShdr(data);
+}
+template <>
+inline Sym ReadHeader<Sym>(const vector<uint8_t>& data) {
+    return cpySym(data);
+}
+
+inline string ELFGetName(vector<uint8_t> strTab, uint32_t offset) {
+    string result;
+    for(size_t i=offset; i<strTab.size(); i++) {
+        if(strTab[i] == 0)
+            break;
+        result += static_cast<char>(strTab[i]);
+    }
+    return result;
 }

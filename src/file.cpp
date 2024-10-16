@@ -28,16 +28,25 @@ bool File::isELFfile() {
 
 void File::readFile() {
     file.seekg(0, ios::end);
-    streampos fileSize = file.tellg();
+    streampos fileSizePos = file.tellg();
+    size_t fileSize = static_cast<size_t>(fileSizePos);
     file.seekg(0, ios::beg);
 
     const size_t bufferSize = 1024 * 1024;
-    contents.reserve(fileSize);
-    vector<char> buffer(bufferSize);
-    while (file.read(buffer.data(), bufferSize)) {
-        contents.append(buffer.data(), file.gcount());
+    contents.resize(fileSize);
+
+    char* buffer = new char[fileSize];
+    size_t totalRead = 0;
+    while(totalRead < fileSize) {
+        size_t bytesToRead = min(bufferSize, static_cast<size_t>(fileSize - totalRead));
+        file.read(buffer, bytesToRead);
+        if (file.gcount() != static_cast<streamsize>(bytesToRead)) {
+            throw runtime_error("Read file failed!");
+        }
+        memcpy(&contents[totalRead], buffer, bytesToRead);
+        totalRead += bytesToRead;
     }
-    contents.append(buffer.data(), file.gcount());
+    delete[] buffer;
 }
 
 void File::closeFile() {file.close();}

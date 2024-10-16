@@ -5,11 +5,12 @@
 #include <vector>
 #include <cstring>
 #include <cassert>
+#include <elf.h>
 using namespace std;
 class File {
 public:
     string name;
-    string contents;
+    vector<uint8_t> contents;
     ifstream file;
 
     File(string name);
