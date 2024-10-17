@@ -149,6 +149,12 @@ template <>
 inline Sym ReadHeader<Sym>(const vector<uint8_t>& data) {
     return cpySym(data);
 }
+template <typename T>
+inline T ReadHeader(const vector<uint8_t>& data) {
+    T container;
+    memcpy(&container, data.data(), sizeof(T));
+    return container;
+}
 
 inline string ELFGetName(vector<uint8_t> strTab, uint32_t offset) {
     string result;

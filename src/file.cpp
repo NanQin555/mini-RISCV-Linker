@@ -50,3 +50,16 @@ void File::readFile() {
 }
 
 void File::closeFile() {file.close();}
+
+bool CheckMagic(vector<uint8_t> contents) {
+    const string prefix = "\177ELF";
+    string temp;
+    for(int i=0; i<prefix.size(); i++)
+        temp+=contents[i];
+    if(temp != prefix) {
+        cout << "File is not an ELF file." << endl;
+        assert(0&&"not elf");
+        return false;
+    }
+    return true;
+}

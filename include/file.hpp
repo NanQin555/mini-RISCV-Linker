@@ -20,3 +20,5 @@ public:
     void closeFile();
 };
 
+bool CheckMagic(vector<uint8_t>);
+
