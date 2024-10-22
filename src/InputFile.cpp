@@ -1,14 +1,25 @@
 #include "InputFile.hpp"
-
+#include "context.hpp"
 using namespace std;
-InputFile::InputFile(string name): File(name) {
-    if (contents.size() < EhdrSize) {
+
+InputFile::InputFile(string name): file(new File(name)) {
+    InputFIleInit(file);
+}
+
+InputFile::InputFile(File* file): file(file) {
+    InputFIleInit(file);
+}
+
+void InputFile::InputFIleInit(File* file) {
+    if (file->contents.size() < EhdrSize) {
         assert(0&&"File too small");
     }
-    Ehdr elfhead = ReadHeader<Ehdr>(contents);
+    CheckMagic(file->contents);
+    
+    Ehdr elfhead = ReadHeader<Ehdr>(file->contents);
 
     vector<uint8_t> tempContent;
-    tempContent.assign(contents.begin()+elfhead.ShOff, contents.end());
+    tempContent.assign(file->contents.begin()+elfhead.ShOff, file->contents.end());
     Shdr sechead = ReadHeader<Shdr>(tempContent);
 
     uint64_t numSections = elfhead.ShNum;
@@ -26,11 +37,13 @@ InputFile::InputFile(string name): File(name) {
     ShStrtab = GetBytesFromIdx(shstrndx);
 }
 
+
+
 vector<uint8_t> InputFile::GetBytesFromShdr(Shdr& s) {
-    assert(contents.size() > s.Offset+s.Size && "Section header is out of range.");
+    assert(file->contents.size() > s.Offset+s.Size && "Section header is out of range.");
     vector<uint8_t> vec;
     for(size_t i=s.Offset; i<s.Offset+s.Size; i++) {
-        vec.push_back(contents[i]);
+        vec.push_back(file->contents[i]);
     }
     return vec;
 }

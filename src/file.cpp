@@ -1,29 +1,31 @@
+#include <filesystem>
 #include "file.hpp"
+#include "context.hpp"
+using namespace std;
+string current_path = filesystem::current_path().string();
 
 File::File(string name): name(name), file(ifstream(name)) {
+#ifdef DEBUG
+    cout << "Creating File object for: " << name << endl;
+#endif
     openFile();
     readFile();
-    closeFile();
+}
+
+File::File(string name, vector<uint8_t> contents, File* file):
+    name(name), contents(contents), parent(file) {
+#ifdef DEBUG
+    cout << "Creating File object with contents for: " << name << endl;
+#endif
 }
 
 void File::openFile() {
-    if(!file.is_open())
-        assert(0&&"File can't open.");
-    cout << name << ": ";
-    isELFfile();
-
-}
-bool File::isELFfile() {
-    const string prefix = "\177ELF";
-    char buffer[5];
-    file.read(buffer, 4);
-    string temp(buffer, 4);
-    if(temp != prefix) {
-        cout << "File is not an ELF file." << endl;
-        assert(0&&"not elf");
-        return false;
+    if(!file.is_open()) {
+        name = current_path + "/../" + name;
+        file = ifstream(name);
+        if(!file.is_open())
+            cout << "File can't open" << endl;
     }
-    return true;
 }
 
 void File::readFile() {
@@ -53,13 +55,27 @@ void File::closeFile() {file.close();}
 
 bool CheckMagic(vector<uint8_t> contents) {
     const string prefix = "\177ELF";
-    string temp;
-    for(int i=0; i<prefix.size(); i++)
-        temp+=contents[i];
-    if(temp != prefix) {
+    if(!HasPrefix(contents, prefix)) {
         cout << "File is not an ELF file." << endl;
-        assert(0&&"not elf");
         return false;
     }
     return true;
+}
+
+File* OpenLibrary(string filepath) {
+    ifstream file(filepath);
+    if(file.is_open()) {
+        return new File(filepath);
+    }
+    return nullptr;
+}
+
+File* FindLibrary(Context* ctx, string name) {
+    for(auto dir: ctx->Args.LibraryPaths) {
+        string stem = dir + "/lib" + name + ".a";
+        if(File* file = OpenLibrary(stem); file != nullptr) 
+            return file;
+    }
+    assert(0&&"Library not found");
+    return nullptr;
 }

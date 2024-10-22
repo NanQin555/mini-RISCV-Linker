@@ -1,6 +1,12 @@
 #pragma once
 #include <cstdint>
 #include <vector>
+#include <sstream>
+#include <string>
+#include <array>
+#include <algorithm>
+#include "utils.hpp"
+#define Arhdr_Name_Size 16
 using namespace std;
 // ELF header
 typedef struct Ehdr {
@@ -43,30 +49,20 @@ typedef struct Sym {
     uint64_t Size;
 } Sym;
 
+typedef struct Arhdr {
+    uint8_t Name[16];
+    uint8_t Date[12];
+    uint8_t Uid[6];
+    uint8_t Gid[6];
+    uint8_t Mode[8];
+    uint8_t Size[10];
+    uint8_t Fmag[2];
+} Arhdr;
+
 const int EhdrSize = sizeof(Ehdr);
 const int ShdrSize = sizeof(Shdr);
 const int SymSize = sizeof(Sym);
-
-template <typename T>
-T inline swapBytes(T value) {
-    if constexpr (is_same_v<T, uint8_t>)
-        return value;
-    else if constexpr (is_same_v<T, uint16_t>)
-        return (value >> 8) | (value << 8);
-    else if constexpr (is_same_v<T, uint32_t>) {
-        return ((value & 0x000000FF) << 24) |
-               ((value & 0x0000FF00) << 8)  |
-               ((value & 0x00FF0000) >> 8)  |
-               ((value & 0xFF000000) >> 24);
-    }
-    else if constexpr (is_same_v<T, uint64_t>) {
-        return ((value & 0x00000000FFFFFFFFULL) << 32) |
-               ((value & 0xFFFFFFFF00000000ULL) >> 32);
-    }
-    else assert(0&&"unsupported type");
-}
-
-
+const int ArdrSize = sizeof(Arhdr);
 
 inline Ehdr cpyEhdr(const vector<uint8_t>& data) {
     Ehdr header;
@@ -86,20 +82,6 @@ inline Ehdr cpyEhdr(const vector<uint8_t>& data) {
     memcpy(&header.ShStrndx, data.data() + 62, sizeof(uint16_t));
     return header;
     // This machine is small endian already.
-
-    // header.Type = swapBytes(header.Type);
-    // header.Machine = swapBytes(header.Machine);
-    // header.Version = swapBytes(header.Version);
-    // header.Entry = swapBytes(header.Entry);
-    // header.PhOff = swapBytes(header.PhOff);
-    // header.ShOff = swapBytes(header.ShOff);
-    // header.Flags = swapBytes(header.Flags);
-    // header.EhSize = swapBytes(header.EhSize);
-    // header.PhEntSize = swapBytes(header.PhEntSize);
-    // header.PhNum = swapBytes(header.PhNum);
-    // header.ShEntSize = swapBytes(header.ShEntSize);
-    // header.ShNum = swapBytes(header.ShNum);
-    // header.ShStrndx = swapBytes(header.ShStrndx);
 }
 inline Shdr cpyShdr(const vector<uint8_t>& data) {
     Shdr header;
@@ -114,16 +96,6 @@ inline Shdr cpyShdr(const vector<uint8_t>& data) {
     memcpy(&header.AddrAlign, data.data() + 48, sizeof(uint64_t));
     memcpy(&header.EntSize, data.data() + 56, sizeof(uint64_t));
     return header;
-    // header.Name = swapBytes(header.Name);
-    // header.Type = swapBytes(header.Type);
-    // header.Flags = swapBytes(header.Flags);
-    // header.Addr = swapBytes(header.Addr);
-    // header.Offset = swapBytes(header.Offset);
-    // header.Size = swapBytes(header.Size);
-    // header.Link = swapBytes(header.Link);
-    // header.Info = swapBytes(header.Info);
-    // header.AddrAlign = swapBytes(header.AddrAlign);
-    // header.EntSize = swapBytes(header.EntSize);
 }
 inline Sym cpySym(const vector<uint8_t>& data) {
     Sym sym;
@@ -135,6 +107,19 @@ inline Sym cpySym(const vector<uint8_t>& data) {
     memcpy(&sym.Size, data.data() + 16, sizeof(uint64_t));
     return sym;
 }
+
+inline Arhdr cpyArhdr(const vector<uint8_t>& data) {
+    Arhdr arhdr;
+    memcpy(&arhdr.Name, data.data(), 16);
+    memcpy(&arhdr.Date, data.data() + 16, 12);
+    memcpy(&arhdr.Uid, data.data() + 28, 6);
+    memcpy(&arhdr.Gid, data.data() + 34, 6);
+    memcpy(&arhdr.Mode, data.data() + 40, 8);
+    memcpy(&arhdr.Size, data.data() + 48, 10);
+    memcpy(&arhdr.Fmag, data.data() + 58, 2);
+    return arhdr;
+}
+
 template <typename T>
 inline T ReadHeader(const vector<uint8_t>& data);
 template <>
@@ -148,6 +133,10 @@ inline Shdr ReadHeader<Shdr>(const vector<uint8_t>& data) {
 template <>
 inline Sym ReadHeader<Sym>(const vector<uint8_t>& data) {
     return cpySym(data);
+}
+template <>
+inline Arhdr ReadHeader<Arhdr>(const vector<uint8_t>& data) {
+    return cpyArhdr(data);
 }
 template <typename T>
 inline T ReadHeader(const vector<uint8_t>& data) {
@@ -164,4 +153,59 @@ inline string ELFGetName(vector<uint8_t> strTab, uint32_t offset) {
         result += static_cast<char>(strTab[i]);
     }
     return result;
+}
+
+inline int GetArhdrSize(Arhdr* hdr) {
+    string result;
+    for (uint8_t value: hdr->Size) {
+        if (value == 32)
+            break;
+        result += static_cast<char>(value);
+    }
+    stringstream ss(result);
+    int size;
+    ss >> size;
+    if (ss.fail())
+        throw runtime_error("Conversion failed");
+    return size;
+}
+
+inline std::string TrimSpace(const std::string& str) {
+    auto start = str.find_first_not_of(" \t\n\r\f\v");
+    if (start == std::string::npos) return "";
+    auto end = str.find_last_not_of(" \t\n\r\f\v");
+    return str.substr(start, end - start + 1);
+}
+
+inline string ReadArhdrName(Arhdr* hdr, vector<uint8_t> strTab) {
+    // long filename
+    
+    if (HasPrefix(hdr->Name, "/")) {
+        string nameStr(reinterpret_cast<const char*>(hdr->Name + 1), 15);
+        string trimmedStr = TrimSpace(nameStr);
+        int start = stoi(trimmedStr);
+        array<uint8_t, 2> target = { '/', '\n' };
+        auto it = search(strTab.begin() + start, strTab.end(), 
+                              begin(target), end(target));
+        if (it == strTab.end()) {
+            throw runtime_error("can't find '/\\n'");
+        }
+        size_t end = distance(strTab.begin(), it);
+        return string(reinterpret_cast<const char*>(strTab.data() + start), end - start);
+    }
+    // short filename 
+    array<uint8_t, 1> target = { '/' };
+    auto it = search(hdr->Name, hdr->Name+16, 
+                     begin(target), end(target));
+    size_t end = distance(hdr->Name, it);
+    assert(end!=16&&"can't find /\n");
+    return string(reinterpret_cast<const char*>(hdr->Name), end);
+}
+
+inline bool IsStrtab(Arhdr* hdr) {
+    return HasPrefix(hdr->Name, "//");
+}
+
+inline bool IsSymtab(Arhdr* hdr) {
+    return HasPrefix(hdr->Name, "/ ") || HasPrefix(hdr->Name, "/SYM64/");
 }

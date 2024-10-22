@@ -1,17 +1,20 @@
 #pragma once
 #include "file.hpp"
-#include "ELFheadr.hpp"
-#include <vector>
 using namespace std;
-class InputFile: public File{
+class Context;
+class InputFile{
 public:
+    File* file;
     vector<Shdr> ElfSections;
     vector<Sym> ElfSyms;
     int64_t FirstGlobal;
     vector<uint8_t> ShStrtab;
     vector<uint8_t> SymbolStrtab;
+    bool IsAlive;
 
     InputFile(string);
+    InputFile(File*);
+    void InputFIleInit(File*);
     vector<uint8_t> GetBytesFromShdr(Shdr&);
     vector<uint8_t> GetBytesFromIdx(int);
     Shdr* FindSection(uint32_t);

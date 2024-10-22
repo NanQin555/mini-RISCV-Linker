@@ -1,6 +1,10 @@
 #include "ObjectFile.hpp"
-
+#include "context.hpp"
 ObjectFile::ObjectFile(string name): InputFile(name) {
+    Parse();
+}
+ObjectFile::ObjectFile(File* file, bool isAlive): InputFile(file) {
+    this->IsAlive = isAlive;
     Parse();
 }
 
@@ -11,8 +15,4 @@ void ObjectFile::Parse() {
         FillUpElfSyms(SymtabSec);
         SymbolStrtab = GetBytesFromIdx((int64_t)SymtabSec->Link);
     }
-    // for(auto it=ElfSyms.begin(); it!=ElfSyms.end(); ++it) {
-    //     Sym sym = *it;
-    //     cout << ELFGetName(SymbolStrtab, sym.Name) << endl;
-    // }
 }

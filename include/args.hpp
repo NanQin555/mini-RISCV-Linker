@@ -34,6 +34,7 @@ vector<string> parseArgs(int argc, char* argv[], Context& ctx) {
         else {
             param.emplace_back(string("-"+name));
             param.emplace_back(string("--"+name));
+            param.emplace_back(string(name));
             return param;
         }
     };
@@ -103,7 +104,9 @@ vector<string> parseArgs(int argc, char* argv[], Context& ctx) {
                 readArg("hash-style") ||
                 readArg("build-id") || 
                 readFlag("s") ||
-                readFlag("no-relax")) {
+                readFlag("no-relax") ||
+                readFlag("z") ||
+                readFlag("relro")) {
             // ignored
         }
         else {
