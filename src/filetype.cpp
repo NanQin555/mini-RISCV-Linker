@@ -1,5 +1,5 @@
 #include "filetype.hpp"
-
+#include "context.hpp"
 FileType GetFileType(vector<uint8_t> contents) {
     if (contents.size()==0)
         return FileType::FileTypeEmpty;
@@ -20,3 +20,9 @@ FileType GetFileType(vector<uint8_t> contents) {
     }
     return FileType::FileTypeUnknown;
 }   
+
+void CheckFileCompatibility(Context* ctx, File* file) {
+    MachineType mt = GetMachineTypeFromContents(file->contents);
+    assert(mt == ctx->Args.Emulation&&"incompatible file type");
+    return;
+}

@@ -6,14 +6,14 @@
 using namespace std;
 
 ObjectFile* CreateObjectFile(Context* ctx, File* file, bool inLib) {
-    // CheckFileCompatibility(ctx, file);
-    return new ObjectFile(file, !inLib);
+    CheckFileCompatibility(ctx, file);
+    return new ObjectFile(ctx, file, !inLib);
 }
 
 void ReadFile(Context* ctx, File* file) {
     FileType fy = GetFileType(file->contents);
     if(fy == FileType::FileTypeObject) {
-        ctx->Objs.emplace_back(new ObjectFile(file->name));
+        ctx->Objs.emplace_back(CreateObjectFile(ctx, file, false));
     }
     else if(fy == FileType::FileTypeArchive) {
         for(auto archivefile: ReadArchiveMembers(file)) {
@@ -36,5 +36,3 @@ void ReadInputFiles(Context* ctx, vector<string> remaining) {
         }
     }
 } 
-
-

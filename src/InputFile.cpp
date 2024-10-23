@@ -39,10 +39,10 @@ void InputFile::InputFIleInit(File* file) {
 
 
 
-vector<uint8_t> InputFile::GetBytesFromShdr(Shdr& s) {
-    assert(file->contents.size() > s.Offset+s.Size && "Section header is out of range.");
+vector<uint8_t> InputFile::GetBytesFromShdr(Shdr* s) {
+    assert(file->contents.size() > s->Offset+s->Size && "Section header is out of range.");
     vector<uint8_t> vec;
-    for(size_t i=s.Offset; i<s.Offset+s.Size; i++) {
+    for(size_t i=s->Offset; i<s->Offset+s->Size; i++) {
         vec.push_back(file->contents[i]);
     }
     return vec;
@@ -50,7 +50,7 @@ vector<uint8_t> InputFile::GetBytesFromShdr(Shdr& s) {
 
 vector<uint8_t> InputFile::GetBytesFromIdx(int idx) {
     Shdr s = ElfSections[idx];
-    return GetBytesFromShdr(s);
+    return GetBytesFromShdr(&s);
 }
 
 Shdr* InputFile::FindSection(uint32_t type) {
@@ -63,7 +63,7 @@ Shdr* InputFile::FindSection(uint32_t type) {
 }
 
 void InputFile::FillUpElfSyms(Shdr* s) {
-    vector<uint8_t> bytes = GetBytesFromShdr(*s);
+    vector<uint8_t> bytes = GetBytesFromShdr(s);
     int nums = bytes.size()/SymSize;
     while(nums) {
         ElfSyms.push_back(ReadHeader<Sym>(bytes));

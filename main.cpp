@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
         for(auto filename: remaining) {
             if (filename.substr(0,1)=="-")
                 continue;
-            ObjectFile file(filename);
+            ObjectFile file(&ctx, filename);
             ctx.Args.Emulation = GetMachineTypeFromContents(file.file->contents);
             if (ctx.Args.Emulation !=MachineType::None)
                 break;
@@ -22,7 +22,12 @@ int main(int argc, char* argv[]) {
         cout << x << endl;
     }
     ReadInputFiles(&ctx, remaining);
-    cout << "Objs.size(): " << ctx.Objs.size() << endl;
+    
+    cout << "Not IsAlive : " << endl;
+    for(auto obj: ctx.Objs) {
+        if(obj->IsAlive)
+            cout << obj->file->name << endl;
+    }
+    
     return 0;
 }
-  

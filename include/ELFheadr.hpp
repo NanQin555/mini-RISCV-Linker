@@ -5,6 +5,9 @@
 #include <string>
 #include <array>
 #include <algorithm>
+#include <elf.h>
+#include <cstring>
+#include <cassert>
 #include "utils.hpp"
 #define Arhdr_Name_Size 16
 using namespace std;
@@ -27,7 +30,7 @@ typedef struct Ehdr {
 } Ehdr;
 
 // Section header
-typedef struct Shdr {
+typedef struct Shdr { 
     uint32_t Name;
     uint32_t Type;
     uint64_t Flags;
@@ -48,6 +51,14 @@ typedef struct Sym {
     uint64_t Val;
     uint64_t Size;
 } Sym;
+
+inline bool IsAbs(Sym* s) {
+    return s->Shndx == (uint16_t)SHN_ABS;
+}
+
+inline bool IsUndef(Sym* s) {
+    return s->Shndx == (uint16_t)SHN_UNDEF;
+}
 
 typedef struct Arhdr {
     uint8_t Name[16];

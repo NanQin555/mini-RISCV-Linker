@@ -1,6 +1,6 @@
 #include "machinetype.hpp"
 MachineType GetMachineTypeFromContents(vector<uint8_t> contents) {
-    FileType ft = GetFileType(contents);\
+    FileType ft = GetFileType(contents);
     if (ft == FileType::FileTypeObject) {
         vector<uint8_t> temp = contents;
         temp.assign(contents.begin()+18, contents.end());
