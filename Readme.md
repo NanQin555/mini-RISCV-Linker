@@ -6,8 +6,6 @@
 
 我们实现64位RISCV静态链接器 ~~maybe~~
 
-
-
 # ELF
 
 Executable and Linkable Format

@@ -1,11 +1,13 @@
 #include "args.hpp"
 #include "Input.hpp"
+#include "passes.hpp"
 string version = string(VERSION) + "-" + COMMIT_ID;
 int main(int argc, char* argv[]) {
     if(argc<2) {
         assert(0&&"params number error");
     }
     Context ctx = Context();
+    passes pass;
     vector<string> remaining = parseArgs(argc, argv, ctx);
     if (ctx.Args.Emulation==MachineType::None) {
         for(auto filename: remaining) {
@@ -22,12 +24,6 @@ int main(int argc, char* argv[]) {
         cout << x << endl;
     }
     ReadInputFiles(&ctx, remaining);
-    
-    cout << "Not IsAlive : " << endl;
-    for(auto obj: ctx.Objs) {
-        if(obj->IsAlive)
-            cout << obj->file->name << endl;
-    }
-    
+    pass.ResolveSymbols(&ctx);
     return 0;
 }

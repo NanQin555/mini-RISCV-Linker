@@ -10,24 +10,22 @@ void Symbol::SetInputSection(InputSection* isec) {
     Inputsection = isec;
 }
 
+Sym* Symbol::ElfSym() {
+    assert(size_t(SymIdx) < File->ElfSyms.size());
+    return &File->ElfSyms[SymIdx];
+}
+
+void Symbol::Clear() {
+    File = nullptr;
+    Inputsection = nullptr;
+    SymIdx = -1;
+}
+
 Symbol* GetSymbolByName(Context* ctx, string name) {
     auto it = ctx->SymbolMap.find(name);
     if(it != ctx->SymbolMap.end()) {
         return it->second;
     }
-    // Symbol temp(name);
-    // ctx->SymbolMap[name] = &temp;
     ctx->SymbolMap[name] = new Symbol(name);
     return ctx->SymbolMap[name];
-}
-
-Sym* ElfSym(Symbol* s) {
-    assert(size_t(s->SymIdx) < s->File->ElfSyms.size());
-    return &s->File->ElfSyms[s->SymIdx];
-}
-
-void SymbolClear(Symbol* s) {
-    s->File = nullptr;
-    s->Inputsection = nullptr;
-    s->SymIdx = -1;
 }

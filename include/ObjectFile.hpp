@@ -1,5 +1,6 @@
 #pragma once
 #include "InputFile.hpp"
+#include <functional>
 using namespace std;
 class InputSection;
 class Context;
@@ -16,5 +17,8 @@ public:
     void FillUpSymtabShndxSec(Shdr*);
     void InitializeSymbols(Context*);
     int32_t GetShndx(Sym*, int32_t);
+    void ResolveSymbols();
+    InputSection* GetSection(Sym*, int64_t);
+    void MarkLiveObjects(Context*, function<void(ObjectFile*)>);
+    void ClearSymbols();
 };
-

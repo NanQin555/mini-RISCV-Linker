@@ -1,6 +1,7 @@
 #pragma once 
 #include <string>
 #include <vector>
+#include <functional>
 using namespace std;
 template <typename T>
 bool HasPrefix(T contents[], string prefix) {
@@ -26,3 +27,16 @@ bool HasPrefix(vector<T> contents, string prefix) {
 }
 bool RemovePrefix(string &s, string prefix);
 
+template <typename T>
+vector<T> RemoveIf(vector<T> elems, function<bool(T)> condition) {
+    int i = 0;
+    for(auto elem: elems) {
+        if(condition(elem)) 
+            continue;
+
+        elems[i] = elem;            
+        i++;
+    }
+    elems.resize(i);
+    return elems;
+}

@@ -5,11 +5,10 @@ InputSection::InputSection(ObjectFile* file, uint32_t shndx)
     Shdr* shdr = this->getShdr();
     Contents = File->file->contents;
     Contents.assign(Contents.begin()+shdr->Offset, Contents.begin()+shdr->Offset+shdr->Size);
-    
 }
 
 Shdr* InputSection::getShdr() {
-    assert(Shndx < File->ElfSections.size());
+    assert(Shndx < (uint32_t)File->ElfSections.size());
     return &(File->ElfSections[this->Shndx]);
 }
 

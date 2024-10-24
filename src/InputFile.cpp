@@ -11,6 +11,7 @@ InputFile::InputFile(File* file): file(file) {
 }
 
 void InputFile::InputFIleInit(File* file) {
+    FirstGlobal = 0;
     if (file->contents.size() < EhdrSize) {
         assert(0&&"File too small");
     }

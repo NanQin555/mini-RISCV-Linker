@@ -10,6 +10,7 @@ ObjectFile::ObjectFile(Context* ctx, File* file, bool isAlive): InputFile(file) 
 }
 
 void ObjectFile::Parse(Context* ctx) {
+
     SymtabSec = FindSection((uint32_t)SHT_SYMTAB);
     if(SymtabSec != nullptr) {
         FirstGlobal = (int64_t)SymtabSec->Info;
@@ -80,7 +81,6 @@ void ObjectFile::InitializeSymbols(Context* ctx) {
         string name = ELFGetName(SymbolStrtab, esym->Name);
         Symbols[i] = GetSymbolByName(ctx, name);
     }
-    
 }
 
 int32_t ObjectFile::GetShndx(Sym* esym, int32_t idx) {
@@ -89,4 +89,54 @@ int32_t ObjectFile::GetShndx(Sym* esym, int32_t idx) {
         return SymtabShndxSec[idx];
     }
     return esym->Shndx;
+}
+
+void ObjectFile::ResolveSymbols() {
+    for (int64_t i=FirstGlobal; i< (int64_t)ElfSyms.size(); i++) {
+        Symbol* sym = Symbols[i];
+        Sym* esym = &ElfSyms[i];
+        if (IsUndef(esym)) 
+            continue;
+        InputSection* isec;
+        if (!IsAbs(esym)) {
+            isec = GetSection(esym, i);
+            if (isec == nullptr) 
+                continue;
+        }
+        if (sym->File == nullptr) {
+            sym->File = this;
+            sym->SetInputSection(isec);
+            sym->SymIdx = i;
+        }
+        
+    }
+}
+
+InputSection* ObjectFile::GetSection(Sym* esym, int64_t idx) {
+    return Sections[GetShndx(esym, idx)];  
+}
+
+void ObjectFile::MarkLiveObjects(Context* ctx, function<void(ObjectFile*)> feeder) {
+    assert(this->IsAlive);
+    for (int64_t i=FirstGlobal; i< (int64_t)ElfSyms.size(); i++) {
+        Symbol* sym = Symbols[i];
+        Sym* esym = &ElfSyms[i];
+        if(sym->File == nullptr)
+            continue;
+        if(IsUndef(esym) && !sym->File->IsAlive) {
+            sym->File->IsAlive = true;
+            feeder(sym->File);
+        }
+    }
+}
+
+void ObjectFile::ClearSymbols() {
+    if(Symbols.size()==0)
+        return;
+    for(auto it=Symbols.begin()+FirstGlobal; it!=Symbols.end(); it++) {
+        Symbol* sym = *it;
+        if(sym->File == this) {
+            sym->Clear();
+        }
+    }
 }

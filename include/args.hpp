@@ -70,7 +70,7 @@ vector<string> parseArgs(int argc, char* argv[], Context& ctx) {
     };
 
     while(args.size()>0) {
-        if (readFlag("help")) {
+        if (readFlag("h")||readFlag("help")) {
             cout << "usage: " << args[0] << "[options] file...\n" << endl;
             exit(0);
         }
@@ -78,7 +78,6 @@ vector<string> parseArgs(int argc, char* argv[], Context& ctx) {
             cout << "rvld version: " << version << endl;
             exit(0);
         }
-
         if (readArg("o") || readArg("output")) {
             ctx.Args.Output = arg;
         } 

@@ -17,7 +17,7 @@ public:
     Symbol(string);
     ~Symbol() = default;
     void SetInputSection(InputSection*);
+    Sym* ElfSym();
+    void Clear();
 };
 Symbol* GetSymbolByName(Context*, string);
-Sym* ElfSym(Symbol*);
-void SymbolClear(Symbol*);
