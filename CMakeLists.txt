@@ -16,7 +16,7 @@ add_definitions("-Wall -g")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=mold")
 
-# add_definitions( -DDEBUG )
+add_definitions( -DDEBUG )
 # add_definitions( -D_GLIBCXX_DEBUG )
 
 include_directories(${CMAKE_SOURCE_DIR}/include)

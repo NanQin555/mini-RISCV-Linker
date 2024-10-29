@@ -114,5 +114,6 @@ vector<string> parseArgs(int argc, char* argv[], Context& ctx) {
             args.assign(args.begin()+1,args.end());
         }
     }
+
     return remaining;
 }

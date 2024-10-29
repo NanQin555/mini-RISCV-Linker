@@ -1,6 +1,7 @@
 #include "ObjectFile.hpp"
 #include "context.hpp"
 #include "inputSection.hpp"
+#include "utils.hpp"
 ObjectFile::ObjectFile(Context* ctx, string name): InputFile(name) {
     Parse(ctx);
 }
@@ -44,12 +45,7 @@ void ObjectFile::InitializeSections() {
 
 void ObjectFile::FillUpSymtabShndxSec(Shdr* s) {
     vector<uint8_t> bs = GetBytesFromShdr(s);
-    size_t nums = bs.size()/4;
-    while(nums > 0) {
-        SymtabShndxSec.push_back(ReadHeader<uint32_t>(bs));
-        bs.assign(bs.begin()+4, bs.end());
-        nums--;
-    }
+    SymtabShndxSec = ReadSlice<uint32_t>(bs, 4);
     return;
 }
 

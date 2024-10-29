@@ -67,3 +67,12 @@ SectionHeader:
 读 Object file: 需要标注该文件是否是库文件
 
 读 Archive file
+
+## 处理 mergeable sections
+
+写可执行文件也是分块来写
+
+Chunk: 表示写文件的块, 需要名字, Section hdr
+
+
+

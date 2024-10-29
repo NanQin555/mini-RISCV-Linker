@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+
 using namespace std;
 template <typename T>
 bool HasPrefix(T contents[], string prefix) {
@@ -40,3 +41,6 @@ vector<T> RemoveIf(vector<T> elems, function<bool(T)> condition) {
     elems.resize(i);
     return elems;
 }
+
+template <typename T>
+vector<T> ReadSlice(vector<uint8_t> &data, int size);

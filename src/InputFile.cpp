@@ -1,5 +1,6 @@
 #include "InputFile.hpp"
 #include "context.hpp"
+#include "utils.hpp"
 using namespace std;
 
 InputFile::InputFile(string name): file(new File(name)) {
@@ -65,10 +66,6 @@ Shdr* InputFile::FindSection(uint32_t type) {
 
 void InputFile::FillUpElfSyms(Shdr* s) {
     vector<uint8_t> bytes = GetBytesFromShdr(s);
-    int nums = bytes.size()/SymSize;
-    while(nums) {
-        ElfSyms.push_back(ReadHeader<Sym>(bytes));
-        bytes.assign(bytes.begin()+SymSize, bytes.end());
-        nums--;
-    }
+    ElfSyms = ReadSlice<Sym>(bytes, SymSize);
+    return;
 }
