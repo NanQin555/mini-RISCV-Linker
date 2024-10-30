@@ -5,6 +5,7 @@
 #include "machinetype.hpp"
 #include "ObjectFile.hpp"
 #include "symbol.hpp"
+#include "mergedsection.hpp"
 using namespace std;
 
 typedef struct ContextArgs {
@@ -18,6 +19,7 @@ public:
     ContextArgs Args;
     vector<ObjectFile*> Objs; 
     map<string, Symbol*> SymbolMap;
+    vector<MergedSection*> MergedSections;
 
     Context(): Args(ContextArgs{(string("a.out")),
                     MachineType::None}) {                

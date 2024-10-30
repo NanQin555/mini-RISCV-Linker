@@ -26,6 +26,12 @@ bool HasPrefix(vector<T> contents, string prefix) {
     }
     return false;
 }
+inline bool HasPrefix(string contents, string prefix) {
+    if(contents.substr(0, prefix.size()) == prefix)
+        return true;
+    return false;
+}
+
 bool RemovePrefix(string &s, string prefix);
 
 template <typename T>

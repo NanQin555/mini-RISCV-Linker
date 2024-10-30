@@ -14,6 +14,8 @@ public:
     uint64_t Value;
     int32_t SymIdx;
 
+    
+
     Symbol(string);
     ~Symbol() = default;
     void SetInputSection(InputSection*);

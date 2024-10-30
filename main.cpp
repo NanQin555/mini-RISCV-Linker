@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
 
     cout << "Test: ";
     for (auto obj: ctx.Objs) {
-        if(obj->file->name=="out/object/test.o") {./
+        if(obj->file->name=="out/object/test.o") {
             for(auto sym: obj->Symbols) {
                 if(sym->Name=="puts") {
                     cout << sym->File->file->parent->name << endl;
